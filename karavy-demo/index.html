@@ -59,6 +59,38 @@
     </li>
         </ul>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-installazione-componenti-del-cluster">2. Installazione Componenti del Cluster</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#21-cert-manager">2.1 Cert-Manager</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#22-metallb">2.2 MetalLB</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-installazione-karavy-core">3. Installazione Karavy-Core</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4-creazione-del-tenant">4. Creazione del Tenant</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#41-namespace-e-crd">4.1 Namespace e CRD</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5-connessione-al-cluster-tenant">5. Connessione al Cluster Tenant</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#6-installazione-karavy-worker">6. Installazione Karavy-Worker</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#7-configurazione-worker-node">7. Configurazione Worker Node</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#71-accesso-ssh">7.1 Accesso SSH</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#72-manifest-worker">7.2 Manifest Worker</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#8-installazione-karavy-net">8. Installazione Karavy-Net</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#9-definizione-rotte">9. Definizione Rotte</a>
+    </li>
     </ul>
                   </li>
               </ul>
@@ -112,7 +144,172 @@ sudo apt-get update
 sudo apt-get install helm
 </code></pre>
 
-<p>... (contenuto troncato per brevità) ...</p>
+<hr />
+<h2 id="2-installazione-componenti-del-cluster">2. Installazione Componenti del Cluster<a class="headerlink" href="#2-installazione-componenti-del-cluster" title="Permanent link">&para;</a></h2>
+<h3 id="21-cert-manager">2.1 Cert-Manager<a class="headerlink" href="#21-cert-manager" title="Permanent link">&para;</a></h3>
+<pre class="codehilite"><code class="language-bash">helm repo add jetstack https://charts.jetstack.io --force-update
+helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.17.2 --set crds.enabled=true
+</code></pre>
+
+<h3 id="22-metallb">2.2 MetalLB<a class="headerlink" href="#22-metallb" title="Permanent link">&para;</a></h3>
+<pre class="codehilite"><code class="language-bash">kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.9/config/manifests/metallb-native.yaml
+</code></pre>
+
+<p><strong>Esempio configurazione IPAddressPool e L2Advertisement:</strong></p>
+<pre class="codehilite"><code class="language-yaml">apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: karavy-demo-pool
+  namespace: metallb-system
+spec:
+  addresses:
+    - 192.168.1.240-192.168.1.250
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: karavy-demo-advertisement
+  namespace: metallb-system
+</code></pre>
+
+<hr />
+<h2 id="3-installazione-karavy-core">3. Installazione Karavy-Core<a class="headerlink" href="#3-installazione-karavy-core" title="Permanent link">&para;</a></h2>
+<pre class="codehilite"><code class="language-bash">git clone https://github.com/karavy/karavy-demo.git
+kubectl apply -k karavy-demo/core
+</code></pre>
+
+<p>Verificare che l’operatore sia avviato nel namespace <code>karavy-core</code>.</p>
+<hr />
+<h2 id="4-creazione-del-tenant">4. Creazione del Tenant<a class="headerlink" href="#4-creazione-del-tenant" title="Permanent link">&para;</a></h2>
+<h3 id="41-namespace-e-crd">4.1 Namespace e CRD<a class="headerlink" href="#41-namespace-e-crd" title="Permanent link">&para;</a></h3>
+<pre class="codehilite"><code class="language-bash">kubectl create ns tenant-1
+</code></pre>
+
+<p>Applicare il manifest (verificare IP e CIDR per evitare sovrapposizioni):</p>
+<pre class="codehilite"><code class="language-yaml">apiVersion: tenants.karavy.io/v1
+kind: K8sTenant
+metadata:
+  labels:
+    tenant-name: tenant-1
+  name: tenant-1
+  namespace: tenant-1
+spec:
+  kubeMasterDomain: cluster.local
+  tenantApiServer:
+    additionalArgs:
+      - --v=10
+    antiAffinity: true
+    certificateDurationHours: 8760
+  keycloak:
+    enabled: false
+  replicas: 1
+  tenantControllerManager:
+    antiAffinity: true
+    certificateDurationHours: 8760
+    replicas: 1
+  tenantDNSServer:
+    certificateDurationHours: 8760
+  tenantEtcdServer:
+    additionalArgs:
+      - --initial-advertise-peer-urls=$(URI_SCHEME)://$(HOSTNAME).$(SERVICE_NAME).$(K8S_NAMESPACE):2380
+    antiAffinity: true
+    certificateDurationHours: 8760
+    replicas: 3
+    storageClassName: nfs-csi
+    storageSize: 10Gi
+  tenantNetwork:
+    cniApplication:
+      type: calico
+      version: v3.29.2
+    KubeDefaultSvc: 10.240.0.1
+    podCidr: 16
+    PodNetwork: 10.120.0.0
+    serviceCidr: 16
+    serviceNetwork: 10.240.0.0
+    tenantKubeDNSIP: 10.240.0.10
+    tenantKubeDomain: tenant-1.local
+  tenantScheduler:
+    antiAffinity: true
+    certificateDurationHours: 8760
+    replicas: 1
+  tenantVersions:
+    tenantCrioVersion: v1.31.5
+    tenantEtcdVersion: v3.5.18
+    tenantKubeVersion: v1.31.5
+  usersCertificates:
+    certificateDurationHours: 8760
+  winNodeSupport: true
+  workerCertificates:
+    certificateDurationHours: 8760
+</code></pre>
+
+<hr />
+<h2 id="5-connessione-al-cluster-tenant">5. Connessione al Cluster Tenant<a class="headerlink" href="#5-connessione-al-cluster-tenant" title="Permanent link">&para;</a></h2>
+<pre class="codehilite"><code class="language-bash">kubectl get secret -n tenant-1 admin-conf -o jsonpath='{.data.tenant-1-config}' | base64 -d &gt; /tmp/kubeconfig
+export KUBECONFIG=/tmp/kubeconfig
+</code></pre>
+
+<hr />
+<h2 id="6-installazione-karavy-worker">6. Installazione Karavy-Worker<a class="headerlink" href="#6-installazione-karavy-worker" title="Permanent link">&para;</a></h2>
+<pre class="codehilite"><code class="language-bash">kubectl apply -k karavy-demo/worker
+</code></pre>
+
+<hr />
+<h2 id="7-configurazione-worker-node">7. Configurazione Worker Node<a class="headerlink" href="#7-configurazione-worker-node" title="Permanent link">&para;</a></h2>
+<h3 id="71-accesso-ssh">7.1 Accesso SSH<a class="headerlink" href="#71-accesso-ssh" title="Permanent link">&para;</a></h3>
+<p>Generare una chiave SSH e creare un secret:</p>
+<pre class="codehilite"><code class="language-bash">kubectl create secret generic sshkey --from-file=id_rsa=~/.ssh/id_rsa --namespace=tenant-1
+</code></pre>
+
+<h3 id="72-manifest-worker">7.2 Manifest Worker<a class="headerlink" href="#72-manifest-worker" title="Permanent link">&para;</a></h3>
+<pre class="codehilite"><code class="language-yaml">apiVersion: tenants.karavy.io/v1
+kind: K8sTenantWorker
+metadata:
+  name: tenant-1-worker-01
+  namespace: tenant-1
+spec:
+  tenantName: tenant-1
+  hostname: worker-01
+  hostIP: 172.25.58.100
+  sshKeySecret: sshkey
+  operatingSystem: ubuntu2404
+  sshPort: 22
+</code></pre>
+
+<hr />
+<h2 id="8-installazione-karavy-net">8. Installazione Karavy-Net<a class="headerlink" href="#8-installazione-karavy-net" title="Permanent link">&para;</a></h2>
+<pre class="codehilite"><code class="language-bash">kubectl apply -k karavy-demo/net
+</code></pre>
+
+<hr />
+<h2 id="9-definizione-rotte">9. Definizione Rotte<a class="headerlink" href="#9-definizione-rotte" title="Permanent link">&para;</a></h2>
+<pre class="codehilite"><code class="language-yaml">apiVersion: net.karavy.io/v1
+kind: KaravyRouting
+metadata:
+  labels:
+    app.kubernetes.io/name: karavy-net
+    app.kubernetes.io/managed-by: kustomize
+  name: karavy-tenant-1-routing
+  namespace: karavy-net
+spec:
+  tenantName: tenant-1
+  mainServiceCidr: 10.96.0.0/12
+  mainPodCidr: 10.244.0.0/16
+  mainCNIType: userdefined
+  mainClusterNodes:
+    - mainClusterNodeType: controlplane
+      name: kavary-main-cluster
+      servicePriority: 10
+  tenantServiceCidr: 10.240.0.0/16
+  tenantPodCidr: 10.120.0.0/16
+  tenantCNIType: calico
+  tenantClusterNodes:
+    - ip: 192.168.3.216
+      name: worker-01
+      servicePriority: 10
+      sshKey: sshkey
+      sshPort: 22
+</code></pre>
               
             </div>
           </div><footer>

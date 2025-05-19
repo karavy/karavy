@@ -368,6 +368,7 @@ creare nodi linux basati su Ubuntu 24.04. Il cluster supporta anche nodi Microso
 </code></pre></div>
 
 <h3 id="62-manifest-worker">6.2 Manifest Worker<a class="headerlink" href="#62-manifest-worker" title="Permanent link">&para;</a></h3>
+<p>Verificare che il valore di hostname nel manifest sia uguale al nome host del nodo che verrà collegato.</p>
 <div class="codehilite"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tenants.karavy.io/v1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">K8sTenantWorker</span>
 <span class="nt">metadata</span><span class="p">:</span>
@@ -376,7 +377,7 @@ creare nodi linux basati su Ubuntu 24.04. Il cluster supporta anche nodi Microso
 <span class="nt">spec</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">tenantName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tenant-1</span>
 <span class="w">  </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">worker-01</span>
-<span class="w">  </span><span class="nt">hostIP</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">172.25.58.100</span>
+<span class="w">  </span><span class="nt">hostIP</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;ip_del_nodo_worker&gt;</span>
 <span class="w">  </span><span class="nt">sshKeySecret</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sshkey</span>
 <span class="w">  </span><span class="nt">operatingSystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu2404</span>
 <span class="w">  </span><span class="nt">sshPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">22</span>

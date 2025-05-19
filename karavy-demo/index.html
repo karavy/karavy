@@ -357,7 +357,7 @@ creare nodi linux basati su Ubuntu 24.04. Il cluster supporta anche nodi Microso
 <div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>-u<span class="w"> </span>root<span class="w"> </span>ssh-keygen
 </code></pre></div>
 
-<p>Collegarsi al nodo worker e copiare la chiave pubblica appena generata nel file /home/\&lt;user&gt;/.ssh/authorized_keys</p>
+<p>Collegarsi al nodo worker e copiare la chiave pubblica appena generata nel file /home/&lt;user&gt;/.ssh/authorized_keys</p>
 <h3 id="6-accesso-ssh">6. Accesso SSH<a class="headerlink" href="#6-accesso-ssh" title="Permanent link">&para;</a></h3>
 <p>Generare una chiave SSH e creare un secret:</p>
 <div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>sshkey<span class="w"> </span>--from-file<span class="o">=</span><span class="nv">id_rsa</span><span class="o">=</span>~/.ssh/id_rsa<span class="w"> </span>--namespace<span class="o">=</span>tenant-1

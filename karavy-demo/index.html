@@ -109,7 +109,9 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#7-installazione-karavy-net">7. Installazione Karavy-Net</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#71-definizione-rotte">7.1 Definizione Rotte</a>
+    <li class="toctree-l3"><a class="reference internal" href="#71-creazione-del-secret-per-laccesso-ai-nodi-via-ssh">7.1 Creazione del secret per l'accesso ai nodi via ssh</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#72-definizione-rotte">7.2 Definizione Rotte</a>
     </li>
         </ul>
     </li>
@@ -423,7 +425,12 @@ tigera-operator<span class="w">    </span>tigera-operator-64ff5465b7-8r8mm<span 
 <div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>karavy-demo/net
 </code></pre></div>
 
-<h3 id="71-definizione-rotte">7.1 Definizione Rotte<a class="headerlink" href="#71-definizione-rotte" title="Permanent link">&para;</a></h3>
+<h3 id="71-creazione-del-secret-per-laccesso-ai-nodi-via-ssh">7.1 Creazione del secret per l'accesso ai nodi via ssh<a class="headerlink" href="#71-creazione-del-secret-per-laccesso-ai-nodi-via-ssh" title="Permanent link">&para;</a></h3>
+<p>E' necessario creare il secret corrispondente per l'accesso ssh ai nodi worker per permettere all'operatore di creare le rotte</p>
+<div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>-n<span class="w"> </span>karavy-net<span class="w"> </span>sshkey<span class="w"> </span>--from-literal<span class="o">=</span><span class="nv">sshkey</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>-n<span class="w"> </span>tenant-1<span class="w"> </span>sshkey<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.sshkey}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="k">)</span><span class="s2">&quot;</span>
+</code></pre></div>
+
+<h3 id="72-definizione-rotte">7.2 Definizione Rotte<a class="headerlink" href="#72-definizione-rotte" title="Permanent link">&para;</a></h3>
 <div class="codehilite"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">net.karavy.io/v1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">KaravyRouting</span>
 <span class="nt">metadata</span><span class="p">:</span>
@@ -439,7 +446,7 @@ tigera-operator<span class="w">    </span>tigera-operator-64ff5465b7-8r8mm<span 
 <span class="w">  </span><span class="nt">mainCNIType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">userdefined</span>
 <span class="w">  </span><span class="nt">mainClusterNodes</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">mainClusterNodeType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">controlplane</span>
-<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kavary-main-cluster</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">karavy-main-cluster</span>
 <span class="w">      </span><span class="nt">servicePriority</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 <span class="w">  </span><span class="nt">tenantServiceCidr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.240.0.0/16</span>
 <span class="w">  </span><span class="nt">tenantPodCidr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.120.0.0/16</span>

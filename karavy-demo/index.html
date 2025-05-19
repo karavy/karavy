@@ -97,7 +97,7 @@
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#61-generazione-chiave-ssh">6.1 Generazione chiave ssh</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#6-accesso-ssh">6. Accesso SSH</a>
+    <li class="toctree-l3"><a class="reference internal" href="#62-accesso-ssh-da-parte-di-karavy-core">6.2 Accesso SSH da parte di karavy-core</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#62-manifest-worker">6.2 Manifest Worker</a>
     </li>
@@ -354,11 +354,15 @@ creare nodi linux basati su Ubuntu 24.04. Il cluster supporta anche nodi Microso
 <h2 id="6-configurazione-worker-node">6. Configurazione Worker Node<a class="headerlink" href="#6-configurazione-worker-node" title="Permanent link">&para;</a></h2>
 <h3 id="61-generazione-chiave-ssh">6.1 Generazione chiave ssh<a class="headerlink" href="#61-generazione-chiave-ssh" title="Permanent link">&para;</a></h3>
 <p>Sulla vm che ospita il cluster di management creare una coppia di chiavi ssh per root</p>
-<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>-u<span class="w"> </span>root<span class="w"> </span>ssh-keygen
+<div class="codehilite"><pre><span></span><code>ssh-keygen
 </code></pre></div>
 
-<p>Collegarsi al nodo worker e copiare la chiave pubblica appena generata nel file /home/&lt;user&gt;/.ssh/authorized_keys</p>
-<h3 id="6-accesso-ssh">6. Accesso SSH<a class="headerlink" href="#6-accesso-ssh" title="Permanent link">&para;</a></h3>
+<p>Collegarsi al nodo worker e copiare la chiave pubblica appena generata nel file /root/.ssh/authorized_keys</p>
+<p>Verificare che con la chiave generata sia possibile collegarsi al nodo</p>
+<div class="codehilite"><pre><span></span><code>ssh<span class="w"> </span>root@<span class="se">\&lt;</span>indirizzo_ip_worker_node&gt;
+</code></pre></div>
+
+<h3 id="62-accesso-ssh-da-parte-di-karavy-core">6.2 Accesso SSH da parte di karavy-core<a class="headerlink" href="#62-accesso-ssh-da-parte-di-karavy-core" title="Permanent link">&para;</a></h3>
 <p>Generare una chiave SSH e creare un secret:</p>
 <div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>sshkey<span class="w"> </span>--from-file<span class="o">=</span><span class="nv">id_rsa</span><span class="o">=</span>~/.ssh/id_rsa<span class="w"> </span>--namespace<span class="o">=</span>tenant-1
 </code></pre></div>

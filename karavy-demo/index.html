@@ -60,6 +60,12 @@
     <li class="toctree-l3"><a class="reference internal" href="#14-installazione-di-helm">1.4 Installazione di Helm</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#15-installazione-di-storage-condiviso-per-i-volumi-di-etcd">1.5 Installazione di storage condiviso per i volumi di etcd</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#151-installazione-e-configurazione-server-nfs">1.5.1 Installazione e configurazione server NFS</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#152-installazione-provider-csi-nel-cluster-di-management">1.5.2 Installazione provider CSI nel cluster di management</a>
     </li>
         </ul>
     </li>
@@ -145,7 +151,7 @@
 </ul>
 </li>
 </ul>
-<p>Devono essere sulla <strong>stessa rete</strong> (o comunque raggiungibili tra loro). In questa demo sono state usate VM su KVM.</p>
+<p>Le macchine devono essere sulla <strong>stessa rete</strong> (o comunque raggiungibili tra loro senza limitazione di porte o protocolli). In questa demo sono state usate VM su KVM.</p>
 <hr />
 <h2 id="1-installazione-del-cluster-di-management">1. Installazione del Cluster di Management<a class="headerlink" href="#1-installazione-del-cluster-di-management" title="Permanent link">&para;</a></h2>
 <h3 id="11-sistema-operativo">1.1 Sistema Operativo<a class="headerlink" href="#11-sistema-operativo" title="Permanent link">&para;</a></h3>
@@ -175,6 +181,40 @@ sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w
 </code></pre></div>
 
 <h3 id="15-installazione-di-storage-condiviso-per-i-volumi-di-etcd">1.5 Installazione di storage condiviso per i volumi di etcd<a class="headerlink" href="#15-installazione-di-storage-condiviso-per-i-volumi-di-etcd" title="Permanent link">&para;</a></h3>
+<h4 id="151-installazione-e-configurazione-server-nfs">1.5.1 Installazione e configurazione server NFS<a class="headerlink" href="#151-installazione-e-configurazione-server-nfs" title="Permanent link">&para;</a></h4>
+<p>Installare il server NFS e creare la directory che conterrà i volumi kubernetes</p>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>nfs-server
+sudo<span class="w"> </span>mkdir<span class="w"> </span>/home/nfsdata
+</code></pre></div>
+
+<p>Creare la condivisione NFS</p>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>-i
+<span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;/home/nfsdata        &lt;cluster_network&gt;(no_root_squash,rw,sync,no_subtree_check)&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>/etc/exports
+exportfs<span class="w"> </span>-va
+</code></pre></div>
+
+<h3 id="152-installazione-provider-csi-nel-cluster-di-management">1.5.2 Installazione provider CSI nel cluster di management<a class="headerlink" href="#152-installazione-provider-csi-nel-cluster-di-management" title="Permanent link">&para;</a></h3>
+<p>Nel cluster di management installare il driver csi</p>
+<div class="codehilite"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>csi-driver-nfs<span class="w"> </span>https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+helm<span class="w"> </span>install<span class="w"> </span>csi-driver-nfs<span class="w"> </span>csi-driver-nfs/csi-driver-nfs<span class="w"> </span>--namespace<span class="w"> </span>kube-system<span class="w"> </span>--version<span class="w"> </span><span class="m">4</span>.11.0<span class="w"> </span>--set<span class="w"> </span><span class="nv">kubeletDir</span><span class="o">=</span><span class="s2">&quot;/var/lib/k0s/kubelet&quot;</span>
+</code></pre></div>
+
+<p>Sempre nel cluster di management creare la storage class per il provider</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">storage.k8s.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StorageClass</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nfs-csi</span>
+<span class="nt">provisioner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nfs.csi.k8s.io</span>
+<span class="nt">parameters</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">server</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;nfs_server_ip&gt;</span>
+<span class="w">  </span><span class="nt">share</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/home/nfsdata</span>
+<span class="nt">reclaimPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Delete</span>
+<span class="nt">volumeBindingMode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Immediate</span>
+<span class="nt">allowVolumeExpansion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="nt">mountOptions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nfsvers=4.1</span>
+</code></pre></div>
+
 <hr />
 <h2 id="2-installazione-componenti-del-cluster">2. Installazione Componenti del Cluster<a class="headerlink" href="#2-installazione-componenti-del-cluster" title="Permanent link">&para;</a></h2>
 <h3 id="21-cert-manager">2.1 Cert-Manager<a class="headerlink" href="#21-cert-manager" title="Permanent link">&para;</a></h3>

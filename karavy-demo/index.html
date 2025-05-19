@@ -57,6 +57,8 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#13-installazione-di-helm">1.3 Installazione di Helm</a>
     </li>
+    <li class="toctree-l3"><a class="reference internal" href="#14-installazione-di-storage-condiviso-per-i-volumi-di-etcd">1.4 Installazione di storage condiviso per i volumi di etcd</a>
+    </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#2-installazione-componenti-del-cluster">2. Installazione Componenti del Cluster</a>
@@ -129,187 +131,189 @@
 <hr />
 <h2 id="1-installazione-del-cluster-di-management">1. Installazione del Cluster di Management<a class="headerlink" href="#1-installazione-del-cluster-di-management" title="Permanent link">&para;</a></h2>
 <h3 id="11-sistema-operativo">1.1 Sistema Operativo<a class="headerlink" href="#11-sistema-operativo" title="Permanent link">&para;</a></h3>
-<p>Installare <strong>Ubuntu 24.04 Server</strong> e assegnare un <strong>IP statico</strong>.</p>
+<p>Installare <strong>Ubuntu 24.04 Server</strong> e assegnare un <strong>IP statico</strong> ad entrambe le macchine. Durante l'installazione attivare anche il server ssh</p>
 <h3 id="12-installazione-di-k0s">1.2 Installazione di <code>k0s</code><a class="headerlink" href="#12-installazione-di-k0s" title="Permanent link">&para;</a></h3>
-<pre class="codehilite"><code class="language-bash">curl --proto '=https' --tlsv1.2 -sSf https://get.k0s.sh | sudo sh
-sudo k0s install controller --single
-sudo k0s start
-</code></pre>
+<p>Collegarsi alla vm che ospiterà il cluster di management e installare k0s</p>
+<div class="codehilite"><pre><span></span><code>curl<span class="w"> </span>--proto<span class="w"> </span><span class="s1">&#39;=https&#39;</span><span class="w"> </span>--tlsv1.2<span class="w"> </span>-sSf<span class="w"> </span>https://get.k0s.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>sh
+sudo<span class="w"> </span>k0s<span class="w"> </span>install<span class="w"> </span>controller<span class="w"> </span>--single
+sudo<span class="w"> </span>k0s<span class="w"> </span>start
+</code></pre></div>
 
 <h3 id="13-installazione-di-helm">1.3 Installazione di Helm<a class="headerlink" href="#13-installazione-di-helm" title="Permanent link">&para;</a></h3>
-<pre class="codehilite"><code class="language-bash">curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg &gt; /dev/null
-sudo apt-get install apt-transport-https --yes
-echo &quot;deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main&quot; | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
-sudo apt-get update
-sudo apt-get install helm
-</code></pre>
+<div class="codehilite"><pre><span></span><code>curl<span class="w"> </span>https://baltocdn.com/helm/signing.asc<span class="w"> </span><span class="p">|</span><span class="w"> </span>gpg<span class="w"> </span>--dearmor<span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>tee<span class="w"> </span>/usr/share/keyrings/helm.gpg<span class="w"> </span>&gt;<span class="w"> </span>/dev/null
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>apt-transport-https<span class="w"> </span>--yes
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;deb [arch=</span><span class="k">$(</span>dpkg<span class="w"> </span>--print-architecture<span class="k">)</span><span class="s2"> signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>tee<span class="w"> </span>/etc/apt/sources.list.d/helm-stable-debian.list
+sudo<span class="w"> </span>apt-get<span class="w"> </span>update
+sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>helm
+</code></pre></div>
 
+<h3 id="14-installazione-di-storage-condiviso-per-i-volumi-di-etcd">1.4 Installazione di storage condiviso per i volumi di etcd<a class="headerlink" href="#14-installazione-di-storage-condiviso-per-i-volumi-di-etcd" title="Permanent link">&para;</a></h3>
 <hr />
 <h2 id="2-installazione-componenti-del-cluster">2. Installazione Componenti del Cluster<a class="headerlink" href="#2-installazione-componenti-del-cluster" title="Permanent link">&para;</a></h2>
 <h3 id="21-cert-manager">2.1 Cert-Manager<a class="headerlink" href="#21-cert-manager" title="Permanent link">&para;</a></h3>
-<pre class="codehilite"><code class="language-bash">helm repo add jetstack https://charts.jetstack.io --force-update
-helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.17.2 --set crds.enabled=true
-</code></pre>
+<div class="codehilite"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>jetstack<span class="w"> </span>https://charts.jetstack.io<span class="w"> </span>--force-update
+helm<span class="w"> </span>install<span class="w"> </span>cert-manager<span class="w"> </span>jetstack/cert-manager<span class="w"> </span>--namespace<span class="w"> </span>cert-manager<span class="w"> </span>--create-namespace<span class="w"> </span>--version<span class="w"> </span>v1.17.2<span class="w"> </span>--set<span class="w"> </span>crds.enabled<span class="o">=</span><span class="nb">true</span>
+</code></pre></div>
 
 <h3 id="22-metallb">2.2 MetalLB<a class="headerlink" href="#22-metallb" title="Permanent link">&para;</a></h3>
-<pre class="codehilite"><code class="language-bash">kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.9/config/manifests/metallb-native.yaml
-</code></pre>
+<div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/metallb/metallb/v0.14.9/config/manifests/metallb-native.yaml
+</code></pre></div>
 
 <p><strong>Esempio configurazione IPAddressPool e L2Advertisement:</strong></p>
-<pre class="codehilite"><code class="language-yaml">apiVersion: metallb.io/v1beta1
-kind: IPAddressPool
-metadata:
-  name: karavy-demo-pool
-  namespace: metallb-system
-spec:
-  addresses:
-    - 192.168.1.240-192.168.1.250
----
-apiVersion: metallb.io/v1beta1
-kind: L2Advertisement
-metadata:
-  name: karavy-demo-advertisement
-  namespace: metallb-system
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metallb.io/v1beta1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">IPAddressPool</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">karavy-demo-pool</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metallb-system</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">addresses</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.1.240-192.168.1.250</span>
+<span class="nn">---</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metallb.io/v1beta1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">L2Advertisement</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">karavy-demo-advertisement</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metallb-system</span>
+</code></pre></div>
 
 <hr />
 <h2 id="3-installazione-karavy-core">3. Installazione Karavy-Core<a class="headerlink" href="#3-installazione-karavy-core" title="Permanent link">&para;</a></h2>
-<pre class="codehilite"><code class="language-bash">git clone https://github.com/karavy/karavy-demo.git
-kubectl apply -k karavy-demo/core
-</code></pre>
+<div class="codehilite"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/karavy/karavy-demo.git
+kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>karavy-demo/core
+</code></pre></div>
 
 <p>Verificare che l’operatore sia avviato nel namespace <code>karavy-core</code>.</p>
 <hr />
 <h2 id="4-creazione-del-tenant">4. Creazione del Tenant<a class="headerlink" href="#4-creazione-del-tenant" title="Permanent link">&para;</a></h2>
 <h3 id="41-namespace-e-crd">4.1 Namespace e CRD<a class="headerlink" href="#41-namespace-e-crd" title="Permanent link">&para;</a></h3>
-<pre class="codehilite"><code class="language-bash">kubectl create ns tenant-1
-</code></pre>
+<div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>create<span class="w"> </span>ns<span class="w"> </span>tenant-1
+</code></pre></div>
 
 <p>Applicare il manifest (verificare IP e CIDR per evitare sovrapposizioni):</p>
-<pre class="codehilite"><code class="language-yaml">apiVersion: tenants.karavy.io/v1
-kind: K8sTenant
-metadata:
-  labels:
-    tenant-name: tenant-1
-  name: tenant-1
-  namespace: tenant-1
-spec:
-  kubeMasterDomain: cluster.local
-  tenantApiServer:
-    additionalArgs:
-      - --v=10
-    antiAffinity: true
-    certificateDurationHours: 8760
-  keycloak:
-    enabled: false
-  replicas: 1
-  tenantControllerManager:
-    antiAffinity: true
-    certificateDurationHours: 8760
-    replicas: 1
-  tenantDNSServer:
-    certificateDurationHours: 8760
-  tenantEtcdServer:
-    additionalArgs:
-      - --initial-advertise-peer-urls=$(URI_SCHEME)://$(HOSTNAME).$(SERVICE_NAME).$(K8S_NAMESPACE):2380
-    antiAffinity: true
-    certificateDurationHours: 8760
-    replicas: 3
-    storageClassName: nfs-csi
-    storageSize: 10Gi
-  tenantNetwork:
-    cniApplication:
-      type: calico
-      version: v3.29.2
-    KubeDefaultSvc: 10.240.0.1
-    podCidr: 16
-    PodNetwork: 10.120.0.0
-    serviceCidr: 16
-    serviceNetwork: 10.240.0.0
-    tenantKubeDNSIP: 10.240.0.10
-    tenantKubeDomain: tenant-1.local
-  tenantScheduler:
-    antiAffinity: true
-    certificateDurationHours: 8760
-    replicas: 1
-  tenantVersions:
-    tenantCrioVersion: v1.31.5
-    tenantEtcdVersion: v3.5.18
-    tenantKubeVersion: v1.31.5
-  usersCertificates:
-    certificateDurationHours: 8760
-  winNodeSupport: true
-  workerCertificates:
-    certificateDurationHours: 8760
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tenants.karavy.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">K8sTenant</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">tenant-name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tenant-1</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tenant-1</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tenant-1</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">kubeMasterDomain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cluster.local</span>
+<span class="w">  </span><span class="nt">tenantApiServer</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">additionalArgs</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--v=10</span>
+<span class="w">    </span><span class="nt">antiAffinity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">certificateDurationHours</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8760</span>
+<span class="w">  </span><span class="nt">keycloak</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">replicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">tenantControllerManager</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">antiAffinity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">certificateDurationHours</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8760</span>
+<span class="w">    </span><span class="nt">replicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">tenantDNSServer</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">certificateDurationHours</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8760</span>
+<span class="w">  </span><span class="nt">tenantEtcdServer</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">additionalArgs</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--initial-advertise-peer-urls=$(URI_SCHEME)://$(HOSTNAME).$(SERVICE_NAME).$(K8S_NAMESPACE):2380</span>
+<span class="w">    </span><span class="nt">antiAffinity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">certificateDurationHours</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8760</span>
+<span class="w">    </span><span class="nt">replicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<span class="w">    </span><span class="nt">storageClassName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nfs-csi</span>
+<span class="w">    </span><span class="nt">storageSize</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10Gi</span>
+<span class="w">  </span><span class="nt">tenantNetwork</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">cniApplication</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">calico</span>
+<span class="w">      </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v3.29.2</span>
+<span class="w">    </span><span class="nt">KubeDefaultSvc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.240.0.1</span>
+<span class="w">    </span><span class="nt">podCidr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span>
+<span class="w">    </span><span class="nt">PodNetwork</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.120.0.0</span>
+<span class="w">    </span><span class="nt">serviceCidr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span>
+<span class="w">    </span><span class="nt">serviceNetwork</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.240.0.0</span>
+<span class="w">    </span><span class="nt">tenantKubeDNSIP</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.240.0.10</span>
+<span class="w">    </span><span class="nt">tenantKubeDomain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tenant-1.local</span>
+<span class="w">  </span><span class="nt">tenantScheduler</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">antiAffinity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">certificateDurationHours</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8760</span>
+<span class="w">    </span><span class="nt">replicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">tenantVersions</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">tenantCrioVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.31.5</span>
+<span class="w">    </span><span class="nt">tenantEtcdVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v3.5.18</span>
+<span class="w">    </span><span class="nt">tenantKubeVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.31.5</span>
+<span class="w">  </span><span class="nt">usersCertificates</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">certificateDurationHours</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8760</span>
+<span class="w">  </span><span class="nt">winNodeSupport</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">  </span><span class="nt">workerCertificates</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">certificateDurationHours</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8760</span>
+</code></pre></div>
 
 <hr />
 <h2 id="5-connessione-al-cluster-tenant">5. Connessione al Cluster Tenant<a class="headerlink" href="#5-connessione-al-cluster-tenant" title="Permanent link">&para;</a></h2>
-<pre class="codehilite"><code class="language-bash">kubectl get secret -n tenant-1 admin-conf -o jsonpath='{.data.tenant-1-config}' | base64 -d &gt; /tmp/kubeconfig
-export KUBECONFIG=/tmp/kubeconfig
-</code></pre>
+<div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>-n<span class="w"> </span>tenant-1<span class="w"> </span>admin-conf<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.tenant-1-config}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span>&gt;<span class="w"> </span>/tmp/kubeconfig
+<span class="nb">export</span><span class="w"> </span><span class="nv">KUBECONFIG</span><span class="o">=</span>/tmp/kubeconfig
+</code></pre></div>
 
 <hr />
 <h2 id="6-installazione-karavy-worker">6. Installazione Karavy-Worker<a class="headerlink" href="#6-installazione-karavy-worker" title="Permanent link">&para;</a></h2>
-<pre class="codehilite"><code class="language-bash">kubectl apply -k karavy-demo/worker
-</code></pre>
+<div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>karavy-demo/worker
+</code></pre></div>
 
 <hr />
 <h2 id="7-configurazione-worker-node">7. Configurazione Worker Node<a class="headerlink" href="#7-configurazione-worker-node" title="Permanent link">&para;</a></h2>
 <h3 id="71-accesso-ssh">7.1 Accesso SSH<a class="headerlink" href="#71-accesso-ssh" title="Permanent link">&para;</a></h3>
 <p>Generare una chiave SSH e creare un secret:</p>
-<pre class="codehilite"><code class="language-bash">kubectl create secret generic sshkey --from-file=id_rsa=~/.ssh/id_rsa --namespace=tenant-1
-</code></pre>
+<div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>sshkey<span class="w"> </span>--from-file<span class="o">=</span><span class="nv">id_rsa</span><span class="o">=</span>~/.ssh/id_rsa<span class="w"> </span>--namespace<span class="o">=</span>tenant-1
+</code></pre></div>
 
 <h3 id="72-manifest-worker">7.2 Manifest Worker<a class="headerlink" href="#72-manifest-worker" title="Permanent link">&para;</a></h3>
-<pre class="codehilite"><code class="language-yaml">apiVersion: tenants.karavy.io/v1
-kind: K8sTenantWorker
-metadata:
-  name: tenant-1-worker-01
-  namespace: tenant-1
-spec:
-  tenantName: tenant-1
-  hostname: worker-01
-  hostIP: 172.25.58.100
-  sshKeySecret: sshkey
-  operatingSystem: ubuntu2404
-  sshPort: 22
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tenants.karavy.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">K8sTenantWorker</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tenant-1-worker-01</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tenant-1</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tenantName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tenant-1</span>
+<span class="w">  </span><span class="nt">hostname</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">worker-01</span>
+<span class="w">  </span><span class="nt">hostIP</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">172.25.58.100</span>
+<span class="w">  </span><span class="nt">sshKeySecret</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sshkey</span>
+<span class="w">  </span><span class="nt">operatingSystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu2404</span>
+<span class="w">  </span><span class="nt">sshPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">22</span>
+</code></pre></div>
 
 <hr />
 <h2 id="8-installazione-karavy-net">8. Installazione Karavy-Net<a class="headerlink" href="#8-installazione-karavy-net" title="Permanent link">&para;</a></h2>
-<pre class="codehilite"><code class="language-bash">kubectl apply -k karavy-demo/net
-</code></pre>
+<div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>karavy-demo/net
+</code></pre></div>
 
 <hr />
 <h2 id="9-definizione-rotte">9. Definizione Rotte<a class="headerlink" href="#9-definizione-rotte" title="Permanent link">&para;</a></h2>
-<pre class="codehilite"><code class="language-yaml">apiVersion: net.karavy.io/v1
-kind: KaravyRouting
-metadata:
-  labels:
-    app.kubernetes.io/name: karavy-net
-    app.kubernetes.io/managed-by: kustomize
-  name: karavy-tenant-1-routing
-  namespace: karavy-net
-spec:
-  tenantName: tenant-1
-  mainServiceCidr: 10.96.0.0/12
-  mainPodCidr: 10.244.0.0/16
-  mainCNIType: userdefined
-  mainClusterNodes:
-    - mainClusterNodeType: controlplane
-      name: kavary-main-cluster
-      servicePriority: 10
-  tenantServiceCidr: 10.240.0.0/16
-  tenantPodCidr: 10.120.0.0/16
-  tenantCNIType: calico
-  tenantClusterNodes:
-    - ip: 192.168.3.216
-      name: worker-01
-      servicePriority: 10
-      sshKey: sshkey
-      sshPort: 22
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">net.karavy.io/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">KaravyRouting</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">app.kubernetes.io/name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">karavy-net</span>
+<span class="w">    </span><span class="nt">app.kubernetes.io/managed-by</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kustomize</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">karavy-tenant-1-routing</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">karavy-net</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tenantName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tenant-1</span>
+<span class="w">  </span><span class="nt">mainServiceCidr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.96.0.0/12</span>
+<span class="w">  </span><span class="nt">mainPodCidr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.244.0.0/16</span>
+<span class="w">  </span><span class="nt">mainCNIType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">userdefined</span>
+<span class="w">  </span><span class="nt">mainClusterNodes</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">mainClusterNodeType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">controlplane</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kavary-main-cluster</span>
+<span class="w">      </span><span class="nt">servicePriority</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">  </span><span class="nt">tenantServiceCidr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.240.0.0/16</span>
+<span class="w">  </span><span class="nt">tenantPodCidr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.120.0.0/16</span>
+<span class="w">  </span><span class="nt">tenantCNIType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">calico</span>
+<span class="w">  </span><span class="nt">tenantClusterNodes</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.3.216</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">worker-01</span>
+<span class="w">      </span><span class="nt">servicePriority</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="w">      </span><span class="nt">sshKey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sshkey</span>
+<span class="w">      </span><span class="nt">sshPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">22</span>
+</code></pre></div>
               
             </div>
           </div><footer>

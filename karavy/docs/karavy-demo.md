@@ -259,22 +259,40 @@ Dal repository scaricato in precedenza, eseguire il comando per installare il ge
 creare nodi linux basati su Ubuntu 24.04. Il cluster supporta anche nodi Microsoft, la documentazione relativa verrà pubblicata a breve.
 
 ```bash
-kubectl apply -k karavy-demo/worker
+kubectl apply -k karavy-demo/workers
 ```
 
 ---
 
 ## 6. Configurazione Worker Node
 
-### 6.1 Accesso SSH
+### 6.1 Generazione chiave ssh
 
-Generare una chiave SSH e creare un secret:
+Sulla vm che ospita il cluster di management creare una coppia di chiavi ssh per root
 
 ```bash
-kubectl create secret generic sshkey --from-file=id_rsa=~/.ssh/id_rsa --namespace=tenant-1
+ssh-keygen
+```
+
+Collegarsi al nodo worker e copiare la chiave pubblica appena generata nel file /root/.ssh/authorized_keys
+
+Verificare che con la chiave generata sia possibile collegarsi al nodo
+
+```bash
+ssh root@<indirizzo_ip_worker_node>
+```
+
+### 6.2 Accesso SSH da parte di karavy-core
+
+Creare un secret nel tenant a cui il nodo worker dovrà associarsi. Il nome del secret sarà quello indicato nel campo sshKeySecret del cr che definisce il worker node.
+
+```bash
+kubectl create secret generic sshkey -n tenant-1 --from-file=sshkey=/home/<user>/.ssh/<nome_file_chiave_privata>
 ```
 
 ### 6.2 Manifest Worker
+
+Verificare che il valore di hostname nel manifest sia uguale al nome host del nodo che verrà collegato.
 
 ```yaml
 apiVersion: tenants.karavy.io/v1
@@ -285,10 +303,25 @@ metadata:
 spec:
   tenantName: tenant-1
   hostname: worker-01
-  hostIP: 172.25.58.100
+  hostIP: <ip_del_nodo_worker>
   sshKeySecret: sshkey
   operatingSystem: ubuntu2404
   sshPort: 22
+```
+
+### 6.3 Verificare la join del nodo al cluster
+
+Utilizzando il kubeconfig del nuovo tenant (punto 4.2) eseguire il comando
+
+```bash
+kubectl get nodes
+```
+
+Il comando deve restituire il nodo come Ready
+
+```bash
+NAME        STATUS   ROLES    AGE   VERSION
+worker-01   Ready    <none>   0m    v1.31.5
 ```
 
 ---

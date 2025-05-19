@@ -101,6 +101,8 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#62-manifest-worker">6.2 Manifest Worker</a>
     </li>
+    <li class="toctree-l3"><a class="reference internal" href="#63-verificare-la-join-del-nodo-al-cluster">6.3 Verificare la join del nodo al cluster</a>
+    </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#7-installazione-karavy-net">7. Installazione Karavy-Net</a>
@@ -381,6 +383,16 @@ creare nodi linux basati su Ubuntu 24.04. Il cluster supporta anche nodi Microso
 <span class="w">  </span><span class="nt">sshKeySecret</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sshkey</span>
 <span class="w">  </span><span class="nt">operatingSystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu2404</span>
 <span class="w">  </span><span class="nt">sshPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">22</span>
+</code></pre></div>
+
+<h3 id="63-verificare-la-join-del-nodo-al-cluster">6.3 Verificare la join del nodo al cluster<a class="headerlink" href="#63-verificare-la-join-del-nodo-al-cluster" title="Permanent link">&para;</a></h3>
+<p>Utilizzando il kubeconfig del nuovo tenant (punto 4.2) eseguire il comando</p>
+<div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>nodes
+</code></pre></div>
+
+<p>Il comando deve restituire il nodo come Ready</p>
+<div class="codehilite"><pre><span></span><code>NAME<span class="w">        </span>STATUS<span class="w">   </span>ROLES<span class="w">    </span>AGE<span class="w">   </span>VERSION
+worker-01<span class="w">   </span>Ready<span class="w">    </span>&lt;none&gt;<span class="w">   </span>0m<span class="w">    </span>v1.31.5
 </code></pre></div>
 
 <hr />

@@ -250,7 +250,9 @@ helm<span class="w"> </span>install<span class="w"> </span>csi-driver-nfs<span c
 
 <hr />
 <h2 id="3-installazione-karavy-core">3. Installazione Karavy-Core<a class="headerlink" href="#3-installazione-karavy-core" title="Permanent link">&para;</a></h2>
-<div class="codehilite"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/karavy/karavy-demo.git
+<p>Nel cluster di management installare i componente core per la gestione dei tenant</p>
+<div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>git
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/karavy/karavy-demo.git
 kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>karavy-demo/core
 </code></pre></div>
 
@@ -258,10 +260,11 @@ kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> <
 <hr />
 <h2 id="4-creazione-del-tenant">4. Creazione del Tenant<a class="headerlink" href="#4-creazione-del-tenant" title="Permanent link">&para;</a></h2>
 <h3 id="41-namespace-e-crd">4.1 Namespace e CRD<a class="headerlink" href="#41-namespace-e-crd" title="Permanent link">&para;</a></h3>
+<p>Nel cluster di management creare il namespace relativo al nuovo tenant</p>
 <div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>create<span class="w"> </span>ns<span class="w"> </span>tenant-1
 </code></pre></div>
 
-<p>Applicare il manifest (verificare IP e CIDR per evitare sovrapposizioni):</p>
+<p>Applicare nel cluster di management il manifest del nuovo tenant (verificare IP e CIDR per evitare sovrapposizioni):</p>
 <div class="codehilite"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tenants.karavy.io/v1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">K8sTenant</span>
 <span class="nt">metadata</span><span class="p">:</span>

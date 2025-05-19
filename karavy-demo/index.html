@@ -65,8 +65,6 @@
     </li>
         </ul>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#152-installazione-provider-csi-nel-cluster-di-management">1.5.2 Installazione provider CSI nel cluster di management</a>
-    </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#2-installazione-componenti-del-cluster">2. Installazione Componenti del Cluster</a>
@@ -74,8 +72,14 @@
     <li class="toctree-l3"><a class="reference internal" href="#21-cert-manager">2.1 Cert-Manager</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#22-metallb">2.2 MetalLB</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#221-configurazione-ipaddresspool-e-l2advertisement">2.2.1 Configurazione IPAddressPool e L2Advertisement</a>
     </li>
         </ul>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#23-installazione-provider-csi-nel-cluster-di-management">2.3 Installazione provider CSI nel cluster di management</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#3-installazione-karavy-core">3. Installazione Karavy-Core</a>
     </li>
@@ -193,13 +197,42 @@ sudo<span class="w"> </span>mkdir<span class="w"> </span>/home/nfsdata
 exportfs<span class="w"> </span>-va
 </code></pre></div>
 
-<h3 id="152-installazione-provider-csi-nel-cluster-di-management">1.5.2 Installazione provider CSI nel cluster di management<a class="headerlink" href="#152-installazione-provider-csi-nel-cluster-di-management" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="2-installazione-componenti-del-cluster">2. Installazione Componenti del Cluster<a class="headerlink" href="#2-installazione-componenti-del-cluster" title="Permanent link">&para;</a></h2>
+<h3 id="21-cert-manager">2.1 Cert-Manager<a class="headerlink" href="#21-cert-manager" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>jetstack<span class="w"> </span>https://charts.jetstack.io<span class="w"> </span>--force-update
+helm<span class="w"> </span>install<span class="w"> </span>cert-manager<span class="w"> </span>jetstack/cert-manager<span class="w"> </span>--namespace<span class="w"> </span>cert-manager<span class="w"> </span>--create-namespace<span class="w"> </span>--version<span class="w"> </span>v1.17.2<span class="w"> </span>--set<span class="w"> </span>crds.enabled<span class="o">=</span><span class="nb">true</span>
+</code></pre></div>
+
+<h3 id="22-metallb">2.2 MetalLB<a class="headerlink" href="#22-metallb" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/metallb/metallb/v0.14.9/config/manifests/metallb-native.yaml
+</code></pre></div>
+
+<h4 id="221-configurazione-ipaddresspool-e-l2advertisement">2.2.1 Configurazione IPAddressPool e L2Advertisement<a class="headerlink" href="#221-configurazione-ipaddresspool-e-l2advertisement" title="Permanent link">&para;</a></h4>
+<p>Configurare Metallb. Nei manifest seguenti si utilizza la modalità layer2 </p>
+<div class="codehilite"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metallb.io/v1beta1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">IPAddressPool</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">karavy-demo-pool</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metallb-system</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">addresses</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;first_pool_ip&gt;-&lt;last_pool_ip&gt;</span>
+<span class="nn">---</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metallb.io/v1beta1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">L2Advertisement</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">karavy-demo-advertisement</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metallb-system</span>
+</code></pre></div>
+
+<h2 id="23-installazione-provider-csi-nel-cluster-di-management">2.3 Installazione provider CSI nel cluster di management<a class="headerlink" href="#23-installazione-provider-csi-nel-cluster-di-management" title="Permanent link">&para;</a></h2>
 <p>Nel cluster di management installare il driver csi</p>
 <div class="codehilite"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>csi-driver-nfs<span class="w"> </span>https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
 helm<span class="w"> </span>install<span class="w"> </span>csi-driver-nfs<span class="w"> </span>csi-driver-nfs/csi-driver-nfs<span class="w"> </span>--namespace<span class="w"> </span>kube-system<span class="w"> </span>--version<span class="w"> </span><span class="m">4</span>.11.0<span class="w"> </span>--set<span class="w"> </span><span class="nv">kubeletDir</span><span class="o">=</span><span class="s2">&quot;/var/lib/k0s/kubelet&quot;</span>
 </code></pre></div>
 
-<p>Sempre nel cluster di management creare la storage class per il provider</p>
+<p>Sempre nel cluster di management creare la storage class per il provider applicando il seguente manifest</p>
 <div class="codehilite"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">storage.k8s.io/v1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StorageClass</span>
 <span class="nt">metadata</span><span class="p">:</span>
@@ -213,34 +246,6 @@ helm<span class="w"> </span>install<span class="w"> </span>csi-driver-nfs<span c
 <span class="nt">allowVolumeExpansion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="nt">mountOptions</span><span class="p">:</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nfsvers=4.1</span>
-</code></pre></div>
-
-<hr />
-<h2 id="2-installazione-componenti-del-cluster">2. Installazione Componenti del Cluster<a class="headerlink" href="#2-installazione-componenti-del-cluster" title="Permanent link">&para;</a></h2>
-<h3 id="21-cert-manager">2.1 Cert-Manager<a class="headerlink" href="#21-cert-manager" title="Permanent link">&para;</a></h3>
-<div class="codehilite"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>jetstack<span class="w"> </span>https://charts.jetstack.io<span class="w"> </span>--force-update
-helm<span class="w"> </span>install<span class="w"> </span>cert-manager<span class="w"> </span>jetstack/cert-manager<span class="w"> </span>--namespace<span class="w"> </span>cert-manager<span class="w"> </span>--create-namespace<span class="w"> </span>--version<span class="w"> </span>v1.17.2<span class="w"> </span>--set<span class="w"> </span>crds.enabled<span class="o">=</span><span class="nb">true</span>
-</code></pre></div>
-
-<h3 id="22-metallb">2.2 MetalLB<a class="headerlink" href="#22-metallb" title="Permanent link">&para;</a></h3>
-<div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/metallb/metallb/v0.14.9/config/manifests/metallb-native.yaml
-</code></pre></div>
-
-<p><strong>Esempio configurazione IPAddressPool e L2Advertisement:</strong></p>
-<div class="codehilite"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metallb.io/v1beta1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">IPAddressPool</span>
-<span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">karavy-demo-pool</span>
-<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metallb-system</span>
-<span class="nt">spec</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">addresses</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.1.240-192.168.1.250</span>
-<span class="nn">---</span>
-<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metallb.io/v1beta1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">L2Advertisement</span>
-<span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">karavy-demo-advertisement</span>
-<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metallb-system</span>
 </code></pre></div>
 
 <hr />

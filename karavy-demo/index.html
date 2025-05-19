@@ -87,23 +87,25 @@
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#41-namespace-e-crd">4.1 Namespace e CRD</a>
     </li>
+    <li class="toctree-l3"><a class="reference internal" href="#42-connessione-al-cluster-tenant">4.2 Connessione al Cluster Tenant</a>
+    </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#5-connessione-al-cluster-tenant">5. Connessione al Cluster Tenant</a>
+    <li class="toctree-l2"><a class="reference internal" href="#5-installazione-karavy-worker">5. Installazione Karavy-Worker</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#6-installazione-karavy-worker">6. Installazione Karavy-Worker</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#7-configurazione-worker-node">7. Configurazione Worker Node</a>
+    <li class="toctree-l2"><a class="reference internal" href="#6-configurazione-worker-node">6. Configurazione Worker Node</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#71-accesso-ssh">7.1 Accesso SSH</a>
+    <li class="toctree-l3"><a class="reference internal" href="#61-accesso-ssh">6.1 Accesso SSH</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#72-manifest-worker">7.2 Manifest Worker</a>
+    <li class="toctree-l3"><a class="reference internal" href="#62-manifest-worker">6.2 Manifest Worker</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#8-installazione-karavy-net">8. Installazione Karavy-Net</a>
+    <li class="toctree-l2"><a class="reference internal" href="#7-installazione-karavy-net">7. Installazione Karavy-Net</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#71-definizione-rotte">7.1 Definizione Rotte</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#9-definizione-rotte">9. Definizione Rotte</a>
+        </ul>
     </li>
     </ul>
                   </li>
@@ -322,25 +324,38 @@ kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> <
 <span class="w">    </span><span class="nt">certificateDurationHours</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8760</span>
 </code></pre></div>
 
-<hr />
-<h2 id="5-connessione-al-cluster-tenant">5. Connessione al Cluster Tenant<a class="headerlink" href="#5-connessione-al-cluster-tenant" title="Permanent link">&para;</a></h2>
+<h3 id="42-connessione-al-cluster-tenant">4.2 Connessione al Cluster Tenant<a class="headerlink" href="#42-connessione-al-cluster-tenant" title="Permanent link">&para;</a></h3>
+<p>Per prima cosa estrarre il secret relativo al nuovo tenant</p>
 <div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>-n<span class="w"> </span>tenant-1<span class="w"> </span>admin-conf<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.tenant-1-config}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span>&gt;<span class="w"> </span>/tmp/kubeconfig
 <span class="nb">export</span><span class="w"> </span><span class="nv">KUBECONFIG</span><span class="o">=</span>/tmp/kubeconfig
 </code></pre></div>
 
+<p>Eseguendo il comando di elencazione dei pod</p>
+<div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-A
+</code></pre></div>
+
+<p>Il risultato visualizzato mostrerà l'operator di Calico e il dns in Pending, in attesa cioè di un nodo worker per eseguire il carico.</p>
+<div class="codehilite"><pre><span></span><code>NAMESPACE<span class="w">         </span>NAME<span class="w">                               </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE
+kube-system<span class="w">       </span>forwarder-dns-fd89bcbd5-l8wbq<span class="w">      </span><span class="m">0</span>/1<span class="w">     </span>Pending<span class="w">   </span><span class="m">0</span><span class="w">          </span>86m
+kube-system<span class="w">       </span>forwarder-dns-fd89bcbd5-vbnwz<span class="w">      </span><span class="m">0</span>/1<span class="w">     </span>Pending<span class="w">   </span><span class="m">0</span><span class="w">          </span>86m
+tigera-operator<span class="w">   </span>tigera-operator-64ff5465b7-8r8mm<span class="w">   </span><span class="m">0</span>/1<span class="w">     </span>Pending<span class="w">   </span><span class="m">0</span><span class="w">          </span>86m
+</code></pre></div>
+
 <hr />
-<h2 id="6-installazione-karavy-worker">6. Installazione Karavy-Worker<a class="headerlink" href="#6-installazione-karavy-worker" title="Permanent link">&para;</a></h2>
+<h2 id="5-installazione-karavy-worker">5. Installazione Karavy-Worker<a class="headerlink" href="#5-installazione-karavy-worker" title="Permanent link">&para;</a></h2>
+<p>Dal repository scaricato in precedenza, eseguire il comando per installare il gestore dei nodi worker. Al momento è possibile 
+creare nodi linux basati su Ubuntu 24.04. Il cluster supporta anche nodi Microsoft, la documentazione relativa verrà pubblicata a breve.</p>
 <div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>karavy-demo/worker
 </code></pre></div>
 
 <hr />
-<h2 id="7-configurazione-worker-node">7. Configurazione Worker Node<a class="headerlink" href="#7-configurazione-worker-node" title="Permanent link">&para;</a></h2>
-<h3 id="71-accesso-ssh">7.1 Accesso SSH<a class="headerlink" href="#71-accesso-ssh" title="Permanent link">&para;</a></h3>
+<h2 id="6-configurazione-worker-node">6. Configurazione Worker Node<a class="headerlink" href="#6-configurazione-worker-node" title="Permanent link">&para;</a></h2>
+<h3 id="61-accesso-ssh">6.1 Accesso SSH<a class="headerlink" href="#61-accesso-ssh" title="Permanent link">&para;</a></h3>
 <p>Generare una chiave SSH e creare un secret:</p>
 <div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>sshkey<span class="w"> </span>--from-file<span class="o">=</span><span class="nv">id_rsa</span><span class="o">=</span>~/.ssh/id_rsa<span class="w"> </span>--namespace<span class="o">=</span>tenant-1
 </code></pre></div>
 
-<h3 id="72-manifest-worker">7.2 Manifest Worker<a class="headerlink" href="#72-manifest-worker" title="Permanent link">&para;</a></h3>
+<h3 id="62-manifest-worker">6.2 Manifest Worker<a class="headerlink" href="#62-manifest-worker" title="Permanent link">&para;</a></h3>
 <div class="codehilite"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tenants.karavy.io/v1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">K8sTenantWorker</span>
 <span class="nt">metadata</span><span class="p">:</span>
@@ -356,12 +371,11 @@ kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> <
 </code></pre></div>
 
 <hr />
-<h2 id="8-installazione-karavy-net">8. Installazione Karavy-Net<a class="headerlink" href="#8-installazione-karavy-net" title="Permanent link">&para;</a></h2>
+<h2 id="7-installazione-karavy-net">7. Installazione Karavy-Net<a class="headerlink" href="#7-installazione-karavy-net" title="Permanent link">&para;</a></h2>
 <div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>karavy-demo/net
 </code></pre></div>
 
-<hr />
-<h2 id="9-definizione-rotte">9. Definizione Rotte<a class="headerlink" href="#9-definizione-rotte" title="Permanent link">&para;</a></h2>
+<h3 id="71-definizione-rotte">7.1 Definizione Rotte<a class="headerlink" href="#71-definizione-rotte" title="Permanent link">&para;</a></h3>
 <div class="codehilite"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">net.karavy.io/v1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">KaravyRouting</span>
 <span class="nt">metadata</span><span class="p">:</span>

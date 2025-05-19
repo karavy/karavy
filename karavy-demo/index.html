@@ -126,18 +126,24 @@
 <h2 id="requisiti">Requisiti<a class="headerlink" href="#requisiti" title="Permanent link">&para;</a></h2>
 <p>Per questa demo sono necessarie due macchine (fisiche o virtuali):</p>
 <ul>
-<li><strong>Prima VM</strong>: Cluster di <strong>management</strong></li>
+<li><strong>Prima VM</strong>: Cluster di <strong>management</strong><ul>
 <li>CPU: 2</li>
 <li>RAM: 4GB</li>
 <li>Disk: 40GB</li>
-<li><strong>Seconda VM</strong>: Worker node del cluster <strong>tenant</strong></li>
+</ul>
+</li>
+<li><strong>Seconda VM</strong>: Worker node del cluster <strong>tenant</strong><ul>
 <li>CPU: 2</li>
 <li>RAM: 4GB</li>
 <li>Disk: 40GB</li>
-<li><strong>Terza VM</strong>: (Opzionale) Installazione del server NFS per i volumi etcd del cluster <strong>tenant</strong>. Nel caso in cui si disponga già di storage condiviso disponibile per il cluster di management, si può utilizzare quello.</li>
+</ul>
+</li>
+<li><strong>Terza VM</strong>: (Opzionale) Installazione del server NFS per i volumi etcd del cluster <strong>tenant</strong>. Nel caso in cui si disponga già di storage condiviso disponibile per il cluster di management, si può utilizzare quello.<ul>
 <li>CPU: 1</li>
 <li>RAM: 2GB</li>
 <li>Disk: 40GB</li>
+</ul>
+</li>
 </ul>
 <p>Devono essere sulla <strong>stessa rete</strong> (o comunque raggiungibili tra loro). In questa demo sono state usate VM su KVM.</p>
 <hr />

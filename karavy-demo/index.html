@@ -258,6 +258,7 @@ helm<span class="w"> </span>install<span class="w"> </span>csi-driver-nfs<span c
 
 <hr />
 <h2 id="3-installazione-karavy-core">3. Installazione Karavy-Core<a class="headerlink" href="#3-installazione-karavy-core" title="Permanent link">&para;</a></h2>
+<p><strong>Da eseguire nel cluster di management</strong></p>
 <p>Nel cluster di management installare i componente core per la gestione dei tenant</p>
 <div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>git
 git<span class="w"> </span>clone<span class="w"> </span>https://github.com/karavy/karavy-demo.git
@@ -349,6 +350,7 @@ tigera-operator<span class="w">   </span>tigera-operator-64ff5465b7-8r8mm<span c
 
 <hr />
 <h2 id="5-installazione-karavy-worker">5. Installazione Karavy-Worker<a class="headerlink" href="#5-installazione-karavy-worker" title="Permanent link">&para;</a></h2>
+<p><strong>Da eseguire nel cluster di management</strong></p>
 <p>Dal repository scaricato in precedenza, eseguire il comando per installare il gestore dei nodi worker. Al momento è possibile 
 creare nodi linux basati su Ubuntu 24.04. Il cluster supporta anche nodi Microsoft, la documentazione relativa verrà pubblicata a breve.</p>
 <div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>karavy-demo/workers
@@ -416,7 +418,8 @@ tigera-operator<span class="w">    </span>tigera-operator-64ff5465b7-8r8mm<span 
 
 <hr />
 <h2 id="7-installazione-karavy-net">7. Installazione Karavy-Net<a class="headerlink" href="#7-installazione-karavy-net" title="Permanent link">&para;</a></h2>
-<p>Karavy-net si occupa di creare una mesh tra il nuovo cluster e quello di management, in modo da poter raggiungere i servizi del nuovo tenant da parte del cluster di management. Al momento non viene creata nessuna regola di firewall che inibisce la comunicazione dal tenant creato al cluster di management (è allo studio)</p>
+<p><strong>Da eseguire nel cluster di management</strong></p>
+<p>Karavy-net si occupa di creare una mesh tra il nuovo cluster e quello di management, in modo da poter raggiungere i servizi del nuovo tenant da parte del cluster di management. Al momento non viene creata nessuna regola di firewall che inibisce la comunicazione dal tenant creato al cluster di management (è allo studio). Utilizzando sempre il repository scaricato per glli altri due componenti, eseguire</p>
 <div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>karavy-demo/net
 </code></pre></div>
 

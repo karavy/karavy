@@ -103,6 +103,8 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#63-verificare-la-join-del-nodo-al-cluster">6.3 Verificare la join del nodo al cluster</a>
     </li>
+    <li class="toctree-l3"><a class="reference internal" href="#64-verificare-il-corretto-avvio-dei-pod">6.4 Verificare il corretto avvio dei pod</a>
+    </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#7-installazione-karavy-net">7. Installazione Karavy-Net</a>
@@ -393,6 +395,23 @@ creare nodi linux basati su Ubuntu 24.04. Il cluster supporta anche nodi Microso
 <p>Il comando deve restituire il nodo come Ready</p>
 <div class="codehilite"><pre><span></span><code>NAME<span class="w">        </span>STATUS<span class="w">   </span>ROLES<span class="w">    </span>AGE<span class="w">   </span>VERSION
 worker-01<span class="w">   </span>Ready<span class="w">    </span>&lt;none&gt;<span class="w">   </span>0m<span class="w">    </span>v1.31.5
+</code></pre></div>
+
+<h3 id="64-verificare-il-corretto-avvio-dei-pod">6.4 Verificare il corretto avvio dei pod<a class="headerlink" href="#64-verificare-il-corretto-avvio-dei-pod" title="Permanent link">&para;</a></h3>
+<p>Richiedendo la lista dei pod, sempre utilizzando il kubeconfig del nuovo tenant, dovrebbe apparire</p>
+<div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-A
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code>NAMESPACE<span class="w">          </span>NAME<span class="w">                                       </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE
+calico-apiserver<span class="w">   </span>calico-apiserver-67cb957b8c-2gzgk<span class="w">          </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>117m
+calico-apiserver<span class="w">   </span>calico-apiserver-67cb957b8c-wx6j8<span class="w">          </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>117m
+calico-system<span class="w">      </span>calico-kube-controllers-7b688fc6d6-f7trf<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>117m
+calico-system<span class="w">      </span>calico-node-9lnxf<span class="w">                          </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>117m
+calico-system<span class="w">      </span>calico-typha-987d85ddb-p5k92<span class="w">               </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>117m
+calico-system<span class="w">      </span>csi-node-driver-f6h69<span class="w">                      </span><span class="m">2</span>/2<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>117m
+kube-system<span class="w">        </span>forwarder-dns-77f69c68bf-ksvjn<span class="w">             </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>5s
+kube-system<span class="w">        </span>forwarder-dns-77f69c68bf-qrxtk<span class="w">             </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>4s
+tigera-operator<span class="w">    </span>tigera-operator-64ff5465b7-8r8mm<span class="w">           </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>4h2m
 </code></pre></div>
 
 <hr />

@@ -403,19 +403,20 @@ worker-01<span class="w">   </span>Ready<span class="w">    </span>&lt;none&gt;<
 </code></pre></div>
 
 <div class="codehilite"><pre><span></span><code>NAMESPACE<span class="w">          </span>NAME<span class="w">                                       </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE
-calico-apiserver<span class="w">   </span>calico-apiserver-67cb957b8c-2gzgk<span class="w">          </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>117m
-calico-apiserver<span class="w">   </span>calico-apiserver-67cb957b8c-wx6j8<span class="w">          </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>117m
-calico-system<span class="w">      </span>calico-kube-controllers-7b688fc6d6-f7trf<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>117m
-calico-system<span class="w">      </span>calico-node-9lnxf<span class="w">                          </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>117m
-calico-system<span class="w">      </span>calico-typha-987d85ddb-p5k92<span class="w">               </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>117m
-calico-system<span class="w">      </span>csi-node-driver-f6h69<span class="w">                      </span><span class="m">2</span>/2<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>117m
-kube-system<span class="w">        </span>forwarder-dns-77f69c68bf-ksvjn<span class="w">             </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>5s
-kube-system<span class="w">        </span>forwarder-dns-77f69c68bf-qrxtk<span class="w">             </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>4s
-tigera-operator<span class="w">    </span>tigera-operator-64ff5465b7-8r8mm<span class="w">           </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>4h2m
+calico-apiserver<span class="w">   </span>calico-apiserver-67cb957b8c-2gzgk<span class="w">          </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+calico-apiserver<span class="w">   </span>calico-apiserver-67cb957b8c-wx6j8<span class="w">          </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+calico-system<span class="w">      </span>calico-kube-controllers-7b688fc6d6-f7trf<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+calico-system<span class="w">      </span>calico-node-9lnxf<span class="w">                          </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+calico-system<span class="w">      </span>calico-typha-987d85ddb-p5k92<span class="w">               </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+calico-system<span class="w">      </span>csi-node-driver-f6h69<span class="w">                      </span><span class="m">2</span>/2<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+kube-system<span class="w">        </span>forwarder-dns-77f69c68bf-ksvjn<span class="w">             </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+kube-system<span class="w">        </span>forwarder-dns-77f69c68bf-qrxtk<span class="w">             </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+tigera-operator<span class="w">    </span>tigera-operator-64ff5465b7-8r8mm<span class="w">           </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
 </code></pre></div>
 
 <hr />
 <h2 id="7-installazione-karavy-net">7. Installazione Karavy-Net<a class="headerlink" href="#7-installazione-karavy-net" title="Permanent link">&para;</a></h2>
+<p>Karavy-net si occupa di creare una mesh tra il nuovo cluster e quello di management, in modo da poter raggiungere i servizi del nuovo tenant da parte del cluster di management. Al momento non viene creata nessuna regola di firewall che inibisce la comunicazione dal tenant creato al cluster di management (è allo studio)</p>
 <div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>karavy-demo/net
 </code></pre></div>
 
@@ -441,7 +442,7 @@ tigera-operator<span class="w">    </span>tigera-operator-64ff5465b7-8r8mm<span 
 <span class="w">  </span><span class="nt">tenantPodCidr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.120.0.0/16</span>
 <span class="w">  </span><span class="nt">tenantCNIType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">calico</span>
 <span class="w">  </span><span class="nt">tenantClusterNodes</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.3.216</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;ip_nodo_worker&gt;</span>
 <span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">worker-01</span>
 <span class="w">      </span><span class="nt">servicePriority</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 <span class="w">      </span><span class="nt">sshKey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sshkey</span>

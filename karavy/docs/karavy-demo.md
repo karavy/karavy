@@ -4,10 +4,20 @@
 
 Per questa demo sono necessarie due macchine (fisiche o virtuali):
 
-- **Prima VM**: Cluster di **management**
-- **Seconda VM**: Worker node del cluster **tenant**
+* **Prima VM**: Cluster di **management**
+    - CPU: 2
+    - RAM: 4GB
+    - Disk: 40GB
+* **Seconda VM**: Worker node del cluster **tenant**
+    - CPU: 2
+    - RAM: 4GB
+    - Disk: 40GB
+* **Terza VM**: (Opzionale) Installazione del server NFS per i volumi etcd del cluster **tenant**. Nel caso in cui si disponga già di storage condiviso disponibile per il cluster di management, si può utilizzare quello.
+    - CPU: 1
+    - RAM: 2GB
+    - Disk: 40GB
 
-Devono essere sulla **stessa rete** (o comunque raggiungibili tra loro). In questa demo sono state usate VM su KVM.
+Le macchine devono essere sulla **stessa rete** (o comunque raggiungibili tra loro senza limitazione di porte o protocolli). In questa demo sono state usate VM su KVM.
 
 ---
 
@@ -15,9 +25,11 @@ Devono essere sulla **stessa rete** (o comunque raggiungibili tra loro). In ques
 
 ### 1.1 Sistema Operativo
 
-Installare **Ubuntu 24.04 Server** e assegnare un **IP statico**.
+Installare **Ubuntu 24.04 Server** e assegnare un **IP statico** ad entrambe le macchine. Durante l'installazione attivare anche il server ssh
 
 ### 1.2 Installazione di `k0s`
+
+Collegarsi alla vm che ospiterà il cluster di management e installare k0s
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://get.k0s.sh | sudo sh
@@ -25,7 +37,18 @@ sudo k0s install controller --single
 sudo k0s start
 ```
 
-### 1.3 Installazione di Helm
+### 1.3 Installare e configurare kubectl per l'accesso al cluster di management
+
+```bash
+sudo -i
+snap install kubectl --classic
+mkdir /home/<user>/.kube
+k0s kubeconfig admin > /home/<user>/.kube/config
+chown -R <user>:<group> /home/<user>/.kube
+exit
+```
+
+### 1.4 Installazione di Helm
 
 ```bash
 curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
@@ -33,6 +56,25 @@ sudo apt-get install apt-transport-https --yes
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
 sudo apt-get update
 sudo apt-get install helm
+```
+
+### 1.5 Installazione di storage condiviso per i volumi di etcd
+
+#### 1.5.1 Installazione e configurazione server NFS
+
+Installare il server NFS e creare la directory che conterrà i volumi kubernetes
+
+```bash
+sudo apt install nfs-server
+sudo mkdir /home/nfsdata
+```
+
+Creare la condivisione NFS
+
+```bash
+sudo -i
+echo '/home/nfsdata        <cluster_network>(no_root_squash,rw,sync,no_subtree_check)' >> /etc/exports
+exportfs -va
 ```
 
 ---
@@ -52,7 +94,9 @@ helm install cert-manager jetstack/cert-manager --namespace cert-manager --creat
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.9/config/manifests/metallb-native.yaml
 ```
 
-**Esempio configurazione IPAddressPool e L2Advertisement:**
+#### 2.2.1 Configurazione IPAddressPool e L2Advertisement
+
+Configurare Metallb. Nei manifest seguenti si utilizza la modalità layer2 
 
 ```yaml
 apiVersion: metallb.io/v1beta1
@@ -62,7 +106,7 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-    - 192.168.1.240-192.168.1.250
+    - <first_pool_ip>-<last_pool_ip>
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
@@ -71,11 +115,41 @@ metadata:
   namespace: metallb-system
 ```
 
+## 2.3 Installazione provider CSI nel cluster di management
+
+Nel cluster di management installare il driver csi
+
+```bash
+helm repo add csi-driver-nfs https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+helm install csi-driver-nfs csi-driver-nfs/csi-driver-nfs --namespace kube-system --version 4.11.0 --set kubeletDir="/var/lib/k0s/kubelet"
+```
+
+Sempre nel cluster di management creare la storage class per il provider applicando il seguente manifest
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs-csi
+provisioner: nfs.csi.k8s.io
+parameters:
+  server: <nfs_server_ip>
+  share: /home/nfsdata
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+mountOptions:
+  - nfsvers=4.1
+```
+
 ---
 
 ## 3. Installazione Karavy-Core
 
+Nel cluster di management installare i componente core per la gestione dei tenant
+
 ```bash
+sudo apt install -y git
 git clone https://github.com/karavy/karavy-demo.git
 kubectl apply -k karavy-demo/core
 ```
@@ -88,11 +162,13 @@ Verificare che l’operatore sia avviato nel namespace `karavy-core`.
 
 ### 4.1 Namespace e CRD
 
+Nel cluster di management creare il namespace relativo al nuovo tenant
+
 ```bash
 kubectl create ns tenant-1
 ```
 
-Applicare il manifest (verificare IP e CIDR per evitare sovrapposizioni):
+Applicare nel cluster di management il manifest del nuovo tenant (verificare IP e CIDR per evitare sovrapposizioni):
 
 ```yaml
 apiVersion: tenants.karavy.io/v1
@@ -109,9 +185,9 @@ spec:
       - --v=10
     antiAffinity: true
     certificateDurationHours: 8760
-  keycloak:
-    enabled: false
-  replicas: 1
+    keycloak:
+      enabled: false
+    replicas: 1
   tenantControllerManager:
     antiAffinity: true
     certificateDurationHours: 8760
@@ -130,9 +206,9 @@ spec:
     cniApplication:
       type: calico
       version: v3.29.2
-    KubeDefaultSvc: 10.240.0.1
+    kubeDefaultSvc: 10.240.0.1
     podCidr: 16
-    PodNetwork: 10.120.0.0
+    podNetwork: 10.120.0.0
     serviceCidr: 16
     serviceNetwork: 10.240.0.0
     tenantKubeDNSIP: 10.240.0.10
@@ -152,18 +228,35 @@ spec:
     certificateDurationHours: 8760
 ```
 
----
+### 4.2 Connessione al Cluster Tenant
 
-## 5. Connessione al Cluster Tenant
+Per prima cosa estrarre il secret relativo al nuovo tenant
 
 ```bash
 kubectl get secret -n tenant-1 admin-conf -o jsonpath='{.data.tenant-1-config}' | base64 -d > /tmp/kubeconfig
 export KUBECONFIG=/tmp/kubeconfig
 ```
 
+Eseguendo il comando di elencazione dei pod
+
+```bash
+kubectl get pods -A
+```
+
+Il risultato visualizzato mostrerà l'operator di Calico e il dns in Pending, in attesa cioè di un nodo worker per eseguire il carico.
+
+```bash
+NAMESPACE         NAME                               READY   STATUS    RESTARTS   AGE
+kube-system       forwarder-dns-fd89bcbd5-l8wbq      0/1     Pending   0          86m
+kube-system       forwarder-dns-fd89bcbd5-vbnwz      0/1     Pending   0          86m
+tigera-operator   tigera-operator-64ff5465b7-8r8mm   0/1     Pending   0          86m
+```
 ---
 
-## 6. Installazione Karavy-Worker
+## 5. Installazione Karavy-Worker
+
+Dal repository scaricato in precedenza, eseguire il comando per installare il gestore dei nodi worker. Al momento è possibile 
+creare nodi linux basati su Ubuntu 24.04. Il cluster supporta anche nodi Microsoft, la documentazione relativa verrà pubblicata a breve.
 
 ```bash
 kubectl apply -k karavy-demo/worker
@@ -171,9 +264,9 @@ kubectl apply -k karavy-demo/worker
 
 ---
 
-## 7. Configurazione Worker Node
+## 6. Configurazione Worker Node
 
-### 7.1 Accesso SSH
+### 6.1 Accesso SSH
 
 Generare una chiave SSH e creare un secret:
 
@@ -181,7 +274,7 @@ Generare una chiave SSH e creare un secret:
 kubectl create secret generic sshkey --from-file=id_rsa=~/.ssh/id_rsa --namespace=tenant-1
 ```
 
-### 7.2 Manifest Worker
+### 6.2 Manifest Worker
 
 ```yaml
 apiVersion: tenants.karavy.io/v1
@@ -200,15 +293,13 @@ spec:
 
 ---
 
-## 8. Installazione Karavy-Net
+## 7. Installazione Karavy-Net
 
 ```bash
 kubectl apply -k karavy-demo/net
 ```
 
----
-
-## 9. Definizione Rotte
+### 7.1 Definizione Rotte
 
 ```yaml
 apiVersion: net.karavy.io/v1

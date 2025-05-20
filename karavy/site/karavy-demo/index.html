@@ -103,11 +103,15 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#63-verificare-la-join-del-nodo-al-cluster">6.3 Verificare la join del nodo al cluster</a>
     </li>
+    <li class="toctree-l3"><a class="reference internal" href="#64-verificare-il-corretto-avvio-dei-pod">6.4 Verificare il corretto avvio dei pod</a>
+    </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#7-installazione-karavy-net">7. Installazione Karavy-Net</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#71-definizione-rotte">7.1 Definizione Rotte</a>
+    <li class="toctree-l3"><a class="reference internal" href="#71-creazione-del-secret-per-laccesso-ai-nodi-via-ssh">7.1 Creazione del secret per l'accesso ai nodi via ssh</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#72-definizione-rotte">7.2 Definizione Rotte</a>
     </li>
         </ul>
     </li>
@@ -143,18 +147,21 @@
 <p>Per questa demo sono necessarie due macchine (fisiche o virtuali):</p>
 <ul>
 <li><strong>Prima VM</strong>: Cluster di <strong>management</strong><ul>
+<li>Hostname: karavy-main</li>
 <li>CPU: 2</li>
 <li>RAM: 4GB</li>
 <li>Disk: 40GB</li>
 </ul>
 </li>
 <li><strong>Seconda VM</strong>: Worker node del cluster <strong>tenant</strong><ul>
+<li>Hostname: worker-01</li>
 <li>CPU: 2</li>
 <li>RAM: 4GB</li>
 <li>Disk: 40GB</li>
 </ul>
 </li>
 <li><strong>Terza VM</strong>: (Opzionale) Installazione del server NFS per i volumi etcd del cluster <strong>tenant</strong>. Nel caso in cui si disponga già di storage condiviso disponibile per il cluster di management, si può utilizzare quello.<ul>
+<li>Hostname: karavy-nfs</li>
 <li>CPU: 1</li>
 <li>RAM: 2GB</li>
 <li>Disk: 40GB</li>
@@ -256,6 +263,7 @@ helm<span class="w"> </span>install<span class="w"> </span>csi-driver-nfs<span c
 
 <hr />
 <h2 id="3-installazione-karavy-core">3. Installazione Karavy-Core<a class="headerlink" href="#3-installazione-karavy-core" title="Permanent link">&para;</a></h2>
+<p><strong>Da eseguire nel cluster di management</strong></p>
 <p>Nel cluster di management installare i componente core per la gestione dei tenant</p>
 <div class="codehilite"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>git
 git<span class="w"> </span>clone<span class="w"> </span>https://github.com/karavy/karavy-demo.git
@@ -347,6 +355,7 @@ tigera-operator<span class="w">   </span>tigera-operator-64ff5465b7-8r8mm<span c
 
 <hr />
 <h2 id="5-installazione-karavy-worker">5. Installazione Karavy-Worker<a class="headerlink" href="#5-installazione-karavy-worker" title="Permanent link">&para;</a></h2>
+<p><strong>Da eseguire nel cluster di management</strong></p>
 <p>Dal repository scaricato in precedenza, eseguire il comando per installare il gestore dei nodi worker. Al momento è possibile 
 creare nodi linux basati su Ubuntu 24.04. Il cluster supporta anche nodi Microsoft, la documentazione relativa verrà pubblicata a breve.</p>
 <div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>karavy-demo/workers
@@ -395,12 +404,36 @@ creare nodi linux basati su Ubuntu 24.04. Il cluster supporta anche nodi Microso
 worker-01<span class="w">   </span>Ready<span class="w">    </span>&lt;none&gt;<span class="w">   </span>0m<span class="w">    </span>v1.31.5
 </code></pre></div>
 
+<h3 id="64-verificare-il-corretto-avvio-dei-pod">6.4 Verificare il corretto avvio dei pod<a class="headerlink" href="#64-verificare-il-corretto-avvio-dei-pod" title="Permanent link">&para;</a></h3>
+<p>Richiedendo la lista dei pod, sempre utilizzando il kubeconfig del nuovo tenant, dovrebbe apparire</p>
+<div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-A
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code>NAMESPACE<span class="w">          </span>NAME<span class="w">                                       </span>READY<span class="w">   </span>STATUS<span class="w">    </span>RESTARTS<span class="w">   </span>AGE
+calico-apiserver<span class="w">   </span>calico-apiserver-67cb957b8c-2gzgk<span class="w">          </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+calico-apiserver<span class="w">   </span>calico-apiserver-67cb957b8c-wx6j8<span class="w">          </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+calico-system<span class="w">      </span>calico-kube-controllers-7b688fc6d6-f7trf<span class="w">   </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+calico-system<span class="w">      </span>calico-node-9lnxf<span class="w">                          </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+calico-system<span class="w">      </span>calico-typha-987d85ddb-p5k92<span class="w">               </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+calico-system<span class="w">      </span>csi-node-driver-f6h69<span class="w">                      </span><span class="m">2</span>/2<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+kube-system<span class="w">        </span>forwarder-dns-77f69c68bf-ksvjn<span class="w">             </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+kube-system<span class="w">        </span>forwarder-dns-77f69c68bf-qrxtk<span class="w">             </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+tigera-operator<span class="w">    </span>tigera-operator-64ff5465b7-8r8mm<span class="w">           </span><span class="m">1</span>/1<span class="w">     </span>Running<span class="w">   </span><span class="m">0</span><span class="w">          </span>0m
+</code></pre></div>
+
 <hr />
 <h2 id="7-installazione-karavy-net">7. Installazione Karavy-Net<a class="headerlink" href="#7-installazione-karavy-net" title="Permanent link">&para;</a></h2>
+<p><strong>Da eseguire nel cluster di management</strong></p>
+<p>Karavy-net si occupa di creare una mesh tra il nuovo cluster e quello di management, in modo da poter raggiungere i servizi del nuovo tenant da parte del cluster di management. Al momento non viene creata nessuna regola di firewall che inibisce la comunicazione dal tenant creato al cluster di management (è allo studio). Utilizzando sempre il repository scaricato per glli altri due componenti, eseguire</p>
 <div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>karavy-demo/net
 </code></pre></div>
 
-<h3 id="71-definizione-rotte">7.1 Definizione Rotte<a class="headerlink" href="#71-definizione-rotte" title="Permanent link">&para;</a></h3>
+<h3 id="71-creazione-del-secret-per-laccesso-ai-nodi-via-ssh">7.1 Creazione del secret per l'accesso ai nodi via ssh<a class="headerlink" href="#71-creazione-del-secret-per-laccesso-ai-nodi-via-ssh" title="Permanent link">&para;</a></h3>
+<p>E' necessario creare il secret corrispondente per l'accesso ssh ai nodi worker per permettere all'operatore di creare le rotte</p>
+<div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>-n<span class="w"> </span>karavy-net<span class="w"> </span>sshkey<span class="w"> </span>--from-literal<span class="o">=</span><span class="nv">sshkey</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>-n<span class="w"> </span>tenant-1<span class="w"> </span>sshkey<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.sshkey}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="k">)</span><span class="s2">&quot;</span>
+</code></pre></div>
+
+<h3 id="72-definizione-rotte">7.2 Definizione Rotte<a class="headerlink" href="#72-definizione-rotte" title="Permanent link">&para;</a></h3>
 <div class="codehilite"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">net.karavy.io/v1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">KaravyRouting</span>
 <span class="nt">metadata</span><span class="p">:</span>
@@ -416,13 +449,13 @@ worker-01<span class="w">   </span>Ready<span class="w">    </span>&lt;none&gt;<
 <span class="w">  </span><span class="nt">mainCNIType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">userdefined</span>
 <span class="w">  </span><span class="nt">mainClusterNodes</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">mainClusterNodeType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">controlplane</span>
-<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kavary-main-cluster</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">karavy-main</span>
 <span class="w">      </span><span class="nt">servicePriority</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 <span class="w">  </span><span class="nt">tenantServiceCidr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.240.0.0/16</span>
 <span class="w">  </span><span class="nt">tenantPodCidr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.120.0.0/16</span>
 <span class="w">  </span><span class="nt">tenantCNIType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">calico</span>
 <span class="w">  </span><span class="nt">tenantClusterNodes</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.3.216</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;ip_nodo_worker&gt;</span>
 <span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">worker-01</span>
 <span class="w">      </span><span class="nt">servicePriority</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 <span class="w">      </span><span class="nt">sshKey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sshkey</span>

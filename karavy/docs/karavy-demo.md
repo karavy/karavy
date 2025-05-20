@@ -5,14 +5,17 @@
 Per questa demo sono necessarie due macchine (fisiche o virtuali):
 
 * **Prima VM**: Cluster di **management**
+    - Hostname: karavy-main
     - CPU: 2
     - RAM: 4GB
     - Disk: 40GB
 * **Seconda VM**: Worker node del cluster **tenant**
+    - Hostname: worker-01
     - CPU: 2
     - RAM: 4GB
     - Disk: 40GB
 * **Terza VM**: (Opzionale) Installazione del server NFS per i volumi etcd del cluster **tenant**. Nel caso in cui si disponga già di storage condiviso disponibile per il cluster di management, si può utilizzare quello.
+    - Hostname: karavy-nfs
     - CPU: 1
     - RAM: 2GB
     - Disk: 40GB
@@ -146,6 +149,8 @@ mountOptions:
 
 ## 3. Installazione Karavy-Core
 
+**Da eseguire nel cluster di management**
+
 Nel cluster di management installare i componente core per la gestione dei tenant
 
 ```bash
@@ -255,6 +260,8 @@ tigera-operator   tigera-operator-64ff5465b7-8r8mm   0/1     Pending   0        
 
 ## 5. Installazione Karavy-Worker
 
+**Da eseguire nel cluster di management**
+
 Dal repository scaricato in precedenza, eseguire il comando per installare il gestore dei nodi worker. Al momento è possibile 
 creare nodi linux basati su Ubuntu 24.04. Il cluster supporta anche nodi Microsoft, la documentazione relativa verrà pubblicata a breve.
 
@@ -324,15 +331,49 @@ NAME        STATUS   ROLES    AGE   VERSION
 worker-01   Ready    <none>   0m    v1.31.5
 ```
 
+### 6.4 Verificare il corretto avvio dei pod
+
+Richiedendo la lista dei pod, sempre utilizzando il kubeconfig del nuovo tenant, dovrebbe apparire
+
+```bash
+kubectl get pods -A
+```
+
+
+```bash
+NAMESPACE          NAME                                       READY   STATUS    RESTARTS   AGE
+calico-apiserver   calico-apiserver-67cb957b8c-2gzgk          1/1     Running   0          0m
+calico-apiserver   calico-apiserver-67cb957b8c-wx6j8          1/1     Running   0          0m
+calico-system      calico-kube-controllers-7b688fc6d6-f7trf   1/1     Running   0          0m
+calico-system      calico-node-9lnxf                          1/1     Running   0          0m
+calico-system      calico-typha-987d85ddb-p5k92               1/1     Running   0          0m
+calico-system      csi-node-driver-f6h69                      2/2     Running   0          0m
+kube-system        forwarder-dns-77f69c68bf-ksvjn             1/1     Running   0          0m
+kube-system        forwarder-dns-77f69c68bf-qrxtk             1/1     Running   0          0m
+tigera-operator    tigera-operator-64ff5465b7-8r8mm           1/1     Running   0          0m
+```
+
 ---
 
 ## 7. Installazione Karavy-Net
+
+**Da eseguire nel cluster di management**
+
+Karavy-net si occupa di creare una mesh tra il nuovo cluster e quello di management, in modo da poter raggiungere i servizi del nuovo tenant da parte del cluster di management. Al momento non viene creata nessuna regola di firewall che inibisce la comunicazione dal tenant creato al cluster di management (è allo studio). Utilizzando sempre il repository scaricato per glli altri due componenti, eseguire
 
 ```bash
 kubectl apply -k karavy-demo/net
 ```
 
-### 7.1 Definizione Rotte
+### 7.1 Creazione del secret per l'accesso ai nodi via ssh
+
+E' necessario creare il secret corrispondente per l'accesso ssh ai nodi worker per permettere all'operatore di creare le rotte
+
+```bash
+kubectl create secret generic -n karavy-net sshkey --from-literal=sshkey="$(kubectl get secret -n tenant-1 sshkey -o jsonpath='{.data.sshkey}' | base64 -d)"
+```
+
+### 7.2 Definizione Rotte
 
 ```yaml
 apiVersion: net.karavy.io/v1
@@ -350,13 +391,13 @@ spec:
   mainCNIType: userdefined
   mainClusterNodes:
     - mainClusterNodeType: controlplane
-      name: kavary-main-cluster
+      name: karavy-main
       servicePriority: 10
   tenantServiceCidr: 10.240.0.0/16
   tenantPodCidr: 10.120.0.0/16
   tenantCNIType: calico
   tenantClusterNodes:
-    - ip: 192.168.3.216
+    - ip: <ip_nodo_worker>
       name: worker-01
       servicePriority: 10
       sshKey: sshkey

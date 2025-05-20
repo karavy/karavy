@@ -147,18 +147,21 @@
 <p>Per questa demo sono necessarie due macchine (fisiche o virtuali):</p>
 <ul>
 <li><strong>Prima VM</strong>: Cluster di <strong>management</strong><ul>
+<li>Hostname: karavy-main</li>
 <li>CPU: 2</li>
 <li>RAM: 4GB</li>
 <li>Disk: 40GB</li>
 </ul>
 </li>
 <li><strong>Seconda VM</strong>: Worker node del cluster <strong>tenant</strong><ul>
+<li>Hostname: worker-01</li>
 <li>CPU: 2</li>
 <li>RAM: 4GB</li>
 <li>Disk: 40GB</li>
 </ul>
 </li>
 <li><strong>Terza VM</strong>: (Opzionale) Installazione del server NFS per i volumi etcd del cluster <strong>tenant</strong>. Nel caso in cui si disponga già di storage condiviso disponibile per il cluster di management, si può utilizzare quello.<ul>
+<li>Hostname: karavy-nfs</li>
 <li>CPU: 1</li>
 <li>RAM: 2GB</li>
 <li>Disk: 40GB</li>
@@ -446,7 +449,7 @@ tigera-operator<span class="w">    </span>tigera-operator-64ff5465b7-8r8mm<span 
 <span class="w">  </span><span class="nt">mainCNIType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">userdefined</span>
 <span class="w">  </span><span class="nt">mainClusterNodes</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">mainClusterNodeType</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">controlplane</span>
-<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">karavy-main-cluster</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">karavy-main</span>
 <span class="w">      </span><span class="nt">servicePriority</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
 <span class="w">  </span><span class="nt">tenantServiceCidr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.240.0.0/16</span>
 <span class="w">  </span><span class="nt">tenantPodCidr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.120.0.0/16</span>

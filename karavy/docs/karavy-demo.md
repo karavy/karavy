@@ -28,7 +28,7 @@ Le macchine devono essere sulla **stessa rete** (o comunque raggiungibili tra lo
 
 ### 1.1 Sistema Operativo
 
-Installare **Ubuntu 24.04 Server** e assegnare un **IP statico** ad entrambe le macchine. Durante l'installazione attivare anche il server ssh
+Installare **Ubuntu 24.04 Server** abilitando OpenSSH server. Assegnare a tutte le macchine un **IP statico**. Durante l'installazione attivare anche il server ssh
 
 ### 1.2 Installazione di `k0s`
 
